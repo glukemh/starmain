@@ -33,7 +33,9 @@ export function* settled(promise) {
  * @returns {SubGen<Awaited<T>>}
  */
 export function* unwrap(promise) {
-  return yield* cb((next) => promise.then(next));
+  const v = yield* settled(promise);
+  if (v.status === "rejected") throw v.reason;
+  return v.value;
 }
 
 /**
@@ -66,14 +68,9 @@ export function linkNext() {
 /** @param {MainGen} gen @param {unknown} [nextValue] */
 function handleNext(gen, nextValue) {
   const next = gen.next(nextValue);
-  if (next.done === true) {
-    if (next.value) {
-      handleNext(next.value);
-    }
-    return;
-  }
 
-  next.value((value) => handleNext(gen, value));
+  if (next.done !== true) next.value((value) => handleNext(gen, value));
+  else if (next.value) handleNext(next.value);
 }
 
 /**
