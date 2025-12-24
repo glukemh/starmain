@@ -1,6 +1,6 @@
 /** @import { MainGenObj } from '../src/types.js' */
 
-import { start, cb, linkNext } from "../src/index.js";
+import { start, linkNext } from "../src/index.js";
 
 /** @implements MainGenObj */
 class Example {
