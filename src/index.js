@@ -1,3 +1,5 @@
+/** @import { MainGen, MainGenFunc, MainGenObj, SubGen, Next, NextCallback } from './types.js' */
+
 /**
  * Call the main generator function and start execution
  * @param {MainGenObj | MainGenFunc | MainGen} mainGen Entry point
@@ -41,7 +43,7 @@ export function* unwrap(promise) {
 /**
  * Creates a callback-based yield point
  * @template [T=void]
- * @param {(next: Next<T>) => void} callback function invoked immediately with a next function
+ * @param {NextCallback<T>} callback function invoked immediately with a next function
  * @returns {SubGen<T>}
  */
 export function* cb(callback) {
@@ -56,13 +58,7 @@ export function* cb(callback) {
 export function linkNext() {
   /** @type {Next<T>} */
   let next = () => {};
-  return [
-    /** @type {Next<T>} */ ((x) => next(x)),
-    () =>
-      /** @type {typeof cb<T>} */ (cb)((n) => {
-        next = n;
-      }),
-  ];
+  return [/** @type {Next<T>} */ ((x) => next(x)), () => cb((n) => (next = n))];
 }
 
 /** @param {MainGen} gen @param {unknown} [nextValue] */
@@ -72,27 +68,3 @@ function handleNext(gen, nextValue) {
   if (next.done !== true) next.value((value) => handleNext(gen, value));
   else if (next.value) handleNext(next.value);
 }
-
-/**
- * Top level generator
- * @typedef {Generator<((next: (value: unknown) => void) => void), MainGen | void>} MainGen
- */
-/**
- * Sub generator that may have a return value
- * @template [T=void]
- * @typedef {Generator<((next: (value: unknown) => void) => void), T>} SubGen
- */
-/**
- * Function returning a top level generator
- * @callback MainGenFunc
- * @returns {MainGen}
- */
-/**
- * Object implementing a main generator function
- * @typedef MainGenObj
- * @prop {MainGenFunc} main Entry point
- */
-/**
- * @template [T=void]
- * @typedef {[T] extends [void] ? (() => void) : (value: T) => void} Next
- */

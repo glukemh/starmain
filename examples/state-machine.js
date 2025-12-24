@@ -1,4 +1,4 @@
-/** @import { MainGenObj } from '../src/index.js' */
+/** @import { MainGenObj } from '../src/types.js' */
 import { start, cb } from "../src/index.js";
 
 /** @implements MainGenObj */
