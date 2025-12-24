@@ -1,5 +1,7 @@
+/** @import { MainGenObj } from '../src/index.js' */
 import { start, settled } from "../src/index.js";
 
+/** @implements MainGenObj */
 class Example {
   constructor() {
     start(this);
@@ -7,10 +9,7 @@ class Example {
 
   *main() {
     const message = yield* settled(Promise.resolve("Hello, world!"));
-    if (message.status === "rejected") {
-      throw new Error("Promise was rejected");
-    }
-    console.log(message.value);
+    console.log(message);
   }
 }
 

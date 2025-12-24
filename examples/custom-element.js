@@ -1,10 +1,9 @@
 /** @import { MainGenObj } from '../src/index.js' */
-import { start, nextCb } from "../src/index.js";
+import { start, linkNext } from "../src/index.js";
 
 /** @implements MainGenObj */
 class Example extends HTMLElement {
   button = document.createElement("button");
-  removeButton = document.createElement("button");
 
   connectedCallback() {
     start(this);
@@ -17,25 +16,17 @@ class Example extends HTMLElement {
   *main() {
     using s = new DisposableStack();
     const controller = s.adopt(new AbortController(), (c) => c.abort());
-    const [next, cb] = nextCb();
+    const [next, gen] = linkNext();
 
-    this.append(this.button, this.removeButton);
-    this.removeButton.textContent = "Remove me";
-    this.removeButton.addEventListener(
-      "click",
-      () => this.remove(),
-      controller,
-    );
+    this.append(this.button);
     this.addEventListener("disconnected", next, controller);
     this.button.addEventListener("click", next, controller);
 
     let count = 0;
     while (this.isConnected) {
       this.button.textContent = `Count: ${count++}`;
-      yield* cb();
+      yield* gen();
     }
-
-    console.log("disconnected");
   }
 }
 

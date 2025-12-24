@@ -1,5 +1,7 @@
-import { start, cb } from "../src/index.js";
+/** @import { MainGenObj } from '../src/index.js' */
+import { start, cb, linkNext } from "../src/index.js";
 
+/** @implements MainGenObj */
 class Example {
   state = new State();
 
@@ -13,22 +15,26 @@ class Example {
         this.state.on("connected", next, { once: true });
       });
     }
-    yield* this.other(this.state);
-    console.log("done");
+    return this.other();
   }
 
-  /** @param {State} state */
-  *other(state) {
-    while (state.connected) {
-      const change = yield* /** @type {typeof cb<string>} */ (cb)((next) => {
-        this.state.on("connected", () => next("connected"), { once: true });
-        this.state.on("message", () => next("message"), { once: true });
-      });
+  *other() {
+    using disposable = new DisposableStack();
+    const controller = disposable.adopt(new AbortController(), (c) =>
+      c.abort(),
+    );
+    const [next, gen] = /** @type {typeof linkNext<string> } */ (linkNext)();
+    this.state.on("connected", () => next("connected"), controller);
+    this.state.on("message", () => next("message"), controller);
+
+    while (this.state.connected) {
+      const change = yield* gen();
 
       if (change === "message") {
-        console.log(state.message);
+        console.log(this.state.message);
       }
     }
+    console.log("done");
   }
 }
 
@@ -59,12 +65,10 @@ class State {
 }
 
 const ex = new Example();
-setTimeout(() => {
-  ex.state.set("connected", true);
-}, 1000);
+ex.state.set("connected", true);
 setTimeout(() => {
   ex.state.set("message", "New message received!");
-}, 2000);
+}, 1000);
 setTimeout(() => {
   ex.state.set("connected", false);
-}, 3000);
+}, 2000);
