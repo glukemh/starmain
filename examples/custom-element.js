@@ -30,4 +30,4 @@ class Example extends HTMLElement {
   }
 }
 
-customElements.define("my-element", Example);
+customElements.define("counter-example", Example);
