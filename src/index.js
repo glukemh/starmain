@@ -57,14 +57,22 @@ export function* cb(callback) {
  */
 export function linkNext() {
   /** @type {Next<T>} */
-  let next = () => {};
+  let next = noop;
   return [/** @type {Next<T>} */ ((x) => next(x)), () => cb((n) => (next = n))];
 }
+
+function noop() {}
 
 /** @param {MainGen} gen @param {unknown} [nextValue] */
 function handleNext(gen, nextValue) {
   const next = gen.next(nextValue);
 
-  if (next.done !== true) next.value((value) => handleNext(gen, value));
-  else if (next.value) handleNext(next.value);
+  if (next.done !== true) {
+    let called = false;
+    next.value((value) => {
+      if (called) return;
+      called = true;
+      handleNext(gen, value);
+    });
+  } else if (next.value) handleNext(next.value);
 }

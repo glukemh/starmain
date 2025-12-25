@@ -1,5 +1,4 @@
 /** @import { MainGenObj } from '../src/types.js' */
-
 import { start, linkNext } from "../src/index.js";
 
 /** @implements MainGenObj */
@@ -15,7 +14,7 @@ class Example {
     const controller = disposable.adopt(new AbortController(), (c) =>
       c.abort(),
     );
-    const [next, gen] = /** @type {typeof linkNext<Event> } */ (linkNext)();
+    const [next, gen] = /** @type {typeof linkNext<Event>} */ (linkNext)();
     this.target.addEventListener("message", next, controller);
     this.target.addEventListener("done", next, controller);
 

@@ -2,6 +2,7 @@
   "include": ["**/*.js"],
   "compilerOptions": {
     "checkJs": true,
+    "strictNullChecks": true,
     "target": "ESNext",
     "lib": ["ESNext", "DOM"]
   }
